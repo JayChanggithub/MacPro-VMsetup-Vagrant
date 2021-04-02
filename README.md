@@ -1,12 +1,12 @@
-tool-vmsetup-centos
+ＭacPro VMsetup Vagrant
 =========================
 
-[![](http://ipt-gitlab.ies.inventec:8000/images/vagrant_photo.jpg)](#tool-vmsetup-centos)
+![image](https://github.com/JayChanggithub/MacPro-VMsetup-Vagrant/blob/master/photo/vagrant-virtualbox.gif)
 
 ---
 
 ## Suitable Project
-   - [x] **Linux CentOS 7.x**
+   - [x] **MacOs Pro**
 
 ---
 
@@ -15,16 +15,9 @@ tool-vmsetup-centos
 
 ---
 
-## Status
-
-[![pipeline status](http://ipt-gitlab.ies.inventec:8081/SIT-develop-tool/tool-vmsetup-centos/badges/master/pipeline.svg)](http://ipt-gitlab.ies.inventec:8081/SIT-develop-tool/tool-vmsetup-centos/commits/master)
-
----
-
 ## Description
 
-  - You must be refer to link **[Tutorial Vagrant Setup](http://ipt-gitlab.ies.inventec:8081/Gitlab/Wiki/wikis/DevOps/Vagrant)**.
-  - Setup the vagrant engin in your Laptop opration system.
+  - This repository is supported to build up the virtual machine of **Centos7** environments via automatically within MacOS Pro.
 
 ## Usage
 
@@ -32,8 +25,8 @@ tool-vmsetup-centos
 
     ```bash
     # Download project in your laptop
-    $ git clone http://ipt-gitlab.ies.inventec:8081/SIT-develop-tool/tool-vmsetup-centos.git
-    $ cd ./tool-vmsetup-centos
+    $ git clone https://github.com/JayChanggithub/MacPro-VMsetup-Vagrant.git
+    $ cd ./MacPro-VMsetup-Vagrant
 
     # Via vagrant engine to deployment VM
     $ vagrant up
@@ -53,32 +46,27 @@ tool-vmsetup-centos
     |  -r, --run        | leverage Vagrant run to start virtual machine. (default run mode: False)。 |
     |  -vm, --vm-name   | specify Virtualbox create VM's folder。         |
     |  -H, --hostname   | specify VM's host name。                        |
-    |  -p, --ssh-forward| specify VM's host ssh port forwarding。          |
-    |  --yum-update     | running the yum update and makecache after add new repositorys. (default: False)。|
+    |  -p, --ssh-forward| specify VM's host ssh port forwarding。         |
+    |  -psd, --password | specify MacPro login password                   |
     |  --disable-guimode  | disable the VM's GUI mode. (default: true)。  |
-    |  -s, --size       | specify the VM's disk size. (default: 50GB)。  |
+    |  -s, --size       | specify the VM's disk size. (default: 50GB)。   |
 
 
-  - Via pipeline API trigeer CI to deployment the VM's
+
+  - Ｃomplete example commandlin
 
     ```bash
-    $ curl -X POST \
-           -F token=ad343859fc3257f0823534d539125d \
-           -F "ref=master" \
-           -F "variables[sut_ip]=10.99.104.251" \
-           -F "variables[script_cmd]='bash vagrant-setup.sh -h'" \
-           http://ipt-gitlab.ies.inventec:8081/api/v4/projects/23/trigger/pipeline
+    $ bash vagrant-setup.sh -psd $mac_password -s 50 -p 2210 -H k8s-master1 -vm k8s-master1 -r -m 4096
     ```
 
-  - After update the vagrantfile type the command to reload and restart virtual machine
+  - After update the **vagrantfile** type the following commandline to reload and restart virtual machine.
 
 
     ```bash
     $ vagrant reload
     ```
 
-  - Inspect the ssh authentication method
-
+  - Inspect the ssh authentication methodology
 
     ```bash
     $ vagrant ssh-config
@@ -96,11 +84,6 @@ tool-vmsetup-centos
     ```bash
     # Edit Vagrantfile by manually
     config.disksize.size = '70GB'
-    ```
-
-    ```bash
-    # Note: this will not work with vagrant reload; if not from vagrant-setup.sh
-    $ vagrant halt && vagrant up
     ```
 
     ```bash
@@ -123,10 +106,22 @@ tool-vmsetup-centos
     $ xfs_growfs /
     ```
 
+  - Shutdown VM
+
+    ```bash
+    $ vagrant halt
+    ```
+
+  - Startup VM
+
+    ```bash
+    $ vagrant up
+    ```
+
   - Via vagrant install VM's enable GUI mode
 
     - **[Setup Vagrant GUI mode](https://codingbee.net/vagrant/vagrant-enabling-a-centos-vms-gui-mode)** <br>
 
 ## Contact
-##### Author: Jay.Chang
-##### Email: cqe5914678@gmail.com
+##### Author: chieh-chuna.chang
+##### Email: chieh-chuna.chang@sap.com

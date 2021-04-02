@@ -37,8 +37,7 @@ basic_packages=(ansible
                 jq
                 git)
 
-function envrequired
-{
+function envrequired {
     yum update -y
     yum install upgrade -y
     yum install epel-release -y
@@ -63,8 +62,7 @@ function envrequired
     done
 }
 
-function precondition
-{
+function precondition {
     # set timezone
     timedatectl set-timezone Asia/Shanghai
     timedatectl set-local-rtc 0
@@ -158,8 +156,7 @@ EOF
     fi
 }
 
-function sethostname
-{
+function sethostname {
     if [ -f /etc/hostname ] &&
        [ "$(cat /etc/hostname | grep 'jay-vagrant')" == "" ]; then
          sed -i '1d' /etc/hostname
@@ -168,8 +165,7 @@ function sethostname
     fi
 }
 
-function installgui
-{
+function installgui {
     if [ -f /vagrant/Vagrantfile ]; then
         local flag=$(cat /vagrant/Vagrantfile | grep 'vb.gui' \
                      | awk -F '=' '{print $2}' | tr -d ' ')
@@ -197,8 +193,7 @@ function installgui
     fi
 }
 
-function setupssh
-{
+function setupssh {
     local vagrant_key='/vagrant/key/id_rsa.pub'
     local host_key='/root/.ssh/authorized_keys'
     printf "\n%-40s [${BLUE} %s ${NC1}]\n" " * Setup ssh key in directory " "/root/.ssh"
@@ -227,8 +222,7 @@ function setupssh
     return 0
 }
 
-function gitsetup
-{
+function gitsetup {
     if [ -f ~/.gitmessage ]; then
         printf "\n%-40s [${RED} %s ${NC1}]\n" " * file: ~/gitmessage " "exist"
     else
@@ -238,8 +232,7 @@ function gitsetup
     git config --global core.editor vim
 }
 
-function vimconfig
-{
+function vimconfig {
     local cache='/tmp/vim.conf'
     local conf=$(cat << EOF
 set tabstop=4
@@ -262,22 +255,76 @@ eof
     fi
 }
 
-function installedpython3
-{
+function installedgolang {
+
+    local bash_profile=$HOME/.bashrc
+    if [ "$(command -v go)" == "" ]; then
+        yum --enablerepo=epel install golang -y
+    fi
+
+    export GOPATH=/root/go
+    export GOROOT=/usr/lib/golang
+    export GOBIN=$(go env GOPATH)/bin
+    export GO111MODULE=on
+    export GOPROXY=https://goproxy.cn,direct
+    export PATH=$PATH:${GOROOT}/bin
+
+    local check_list=(
+        GOPATH=$(echo $GOPATH)
+        GOROOT=$(echo $GOROOT)
+        PATH=$(echo $PATH)
+        GOBIN=$(go env GOPATH)/bin
+        "GO111MODULE=on"
+        "GOPROXY=https://goproxy.cn,direct"
+    )
+
+    for content in "${check_list[@]}"
+    do
+        if [ $(awk '/^export / {print $2}' $bash_profile | grep -ci $content) -lt 1 ]; then
+            echo "export $content" >> $bash_profile
+        fi
+    done
+
+    source $bash_profile
+
+    go env -w GOPATH=$GOPATH
+    go env -w GOROOT=$GOROOT
+    go env -w GOBIN=$GOBIN
+    go env -w GO111MODULE=$GO111MODULE
+    go env -w GOPROXY=$GOPROXY
+
+    if [ ! -d /root/go ]; then
+        mkdir -p /root/go/{bin,src,pkg}
+    fi
+}
+
+function installedpython3 {
     local yum_list=('/usr/bin/yum'
                     '/usr/libexec/urlgrabber-ext-down')
+    local bash_init=("/root/.bashrc"
+                     "/home/vagrant/.bashrc")
+
     if [ "$(command -v python3)" == "" ]; then
         wget https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tgz -P /tmp
         cd /tmp; tar xvzf Python-3.9.2.tgz
         cd Python-3.9*/
         ./configure --enable-optimizations
         make altinstall
+        python -m pip install --upgrade pip
         pip3 install \
              --trusted-host pypi.python.org \
              --trusted-host pypi.org \
              --trusted-host files.pythonhosted.org \
              -r /vagrant/requirements.txt
     fi
+
+    for file in "${bash_init[@]}"
+    do
+        if [ $(cat $file | grep -iEc "python3.9") -lt 1 ]; then
+            echo "alias python='/usr/local/bin/python3.9'" >> $file
+        fi
+        source $file
+    done
 
     for f in "${yum_list[@]}"
     do
@@ -288,8 +335,7 @@ function installedpython3
     done
 }
 
-function checknet
-{
+function checknet {
     local count=0
     local network=$1
     local proxy='proxy.sin.sap.corp:8080'
@@ -302,14 +348,14 @@ function checknet
         fi
         case $? in
             0)
-                echo -e "network success... \n"
+                echo -e "network success ... \n"
                 return 0;;
             *)
                 export {https,http}_proxy=$proxy
 
                 # check fail counts
                 if [ $count -ge 4 ]; then
-                    echo -e "network disconnection.\n"
+                    echo -e "network disconnection ... \n"
                     exit 1
                 fi
         esac
@@ -317,8 +363,7 @@ function checknet
     done
 }
 
-function checkstatus
-{
+function checkstatus {
     case $? in
         "0")
             echo -en "${BLUE}"
@@ -349,8 +394,7 @@ EOF
     esac
 }
 
-function diskresize
-{
+function diskresize {
     local criterion_size=$(lsblk \
                            | grep 'sda' \
                            | head -n 1 \
@@ -370,8 +414,7 @@ function diskresize
     fi
 }
 
-function initcleanup
-{
+function initcleanup {
     cp -r /vagrant/banner.sh /root/
     echo 'bash /root/banner.sh' >> ~/.bashrc
     chmod +x /root/banner.sh
@@ -382,16 +425,14 @@ function initcleanup
     find /var/log -type f -exec truncate -s0 {} \;
 }
 
-function ansiblecfg
-{
+function ansiblecfg {
     if [ -f '/etc/ansible/ansible.cfg' ]; then
         sed -i 's.^#host_key_checking = False.host_key_checking = False.g' \
         /etc/ansible/ansible.cfg
     fi
 }
 
-function setupdocker
-{
+function setupdocker {
     local docker_js='/etc/docker/daemon.json '
     local cache='/tmp/docker_tmp.json'
     local json=$(cat << EOF
@@ -454,8 +495,7 @@ eof
     return 0
 }
 
-function syncntp
-{
+function syncntp {
     local ntp_server='ntp.api.bz'
 
     # show information
@@ -491,8 +531,7 @@ echo -en "${END}"
 
 
 
-function main
-{
+function main {
     # switch root user
     sudo su -
 
@@ -533,6 +572,9 @@ function main
 
     # install python3 pip3
     installedpython3
+
+    # install golang
+    installedgolang
 
     # clear cache
     initcleanup

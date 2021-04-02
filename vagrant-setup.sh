@@ -37,8 +37,7 @@ EOF
     return 0
 }
 
-function checknetwork
-{
+function checknetwork {
     local count=0
     local proxy='proxy.sin.sap.corp:8080'
     local network=$1
@@ -118,8 +117,7 @@ function preReqPkg {
     done
 }
 
-function installplug
-{
+function installplug {
     # ps aux | grep -v grep | grep -i vbox      // inspect the vboxmange process whether exist.
     local vbx_version=$(vboxmanage --version | cut -c 1-3)
     local vbguest_version='0.21'
@@ -163,8 +161,7 @@ EOF
     echo -en "${NC1}"
 }
 
-function config
-{
+function config {
     if [ ! -d $vagrant_home ]; then
         mkdir -p $vagrant_home
     fi
@@ -267,8 +264,7 @@ function config
     return $?
 }
 
-function checkstatus
-{
+function checkstatus {
     case $? in
         "0")
             echo -en "${BLUE}"
@@ -299,8 +295,7 @@ EOF
     esac
 }
 
-function main
-{
+function main {
     checknetwork www.google.com
 
     preReqPkg
